@@ -11,12 +11,40 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   WordPair wordPair = WordPair.random();
   final _suggestions = <WordPair>[];
+  final _saved = <WordPair>{};
   final _biggerFont = const TextStyle(fontSize: 18);
+  void _pushSaved() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) {
+        final tiles = _saved.map((e) {
+          return ListTile(
+            title: Text(
+              e.asPascalCase,
+              style: _biggerFont,
+            ),
+          );
+        });
+        final divided = tiles.isNotEmpty
+            ? ListTile.divideTiles(tiles: tiles, context: context).toList()
+            : <Widget>[];
+        return Scaffold(
+          appBar: AppBar(
+            title: Text("Saved Suggestions"),
+          ),
+          body: ListView(
+            children: divided,
+          ),
+        );
+      },
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("CodeLab 1"),
+        title: const Text("CodeLab 1"),
+        actions: [IconButton(onPressed: _pushSaved, icon: Icon(Icons.list))],
       ),
       body: ListView.builder(
         padding: EdgeInsets.all(16),
@@ -34,12 +62,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildRow(WordPair suggestion) {
+  Widget _buildRow(WordPair pair) {
+    final alreadySaved = _saved.contains(pair);
     return ListTile(
       title: Text(
-        suggestion.asPascalCase,
+        pair.asPascalCase,
         style: _biggerFont,
       ),
+      trailing: Icon(
+        alreadySaved ? Icons.favorite : Icons.favorite_border,
+        color: alreadySaved ? Colors.red : null,
+        semanticLabel: alreadySaved ? "Remove from saved" : "Save",
+      ),
+      onTap: () {
+        setState(() {
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
+        });
+      },
     );
   }
 }
